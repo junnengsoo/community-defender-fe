@@ -5,13 +5,13 @@ const tags = Array.from({ length: 50 }).map(
     (_, i, a) => `v1.2.0-beta.${a.length - i}`
 )
 
-export function CallerList() {
+export default function CallerList() {
     return (
-        <div>
+        <div className="px-1">
             <header className="bg-white shadow p-4">
-                <h1 className="text-xl font-semibold">CommunityDefenders</h1>
+                <h1 className="text-l font-semibold">CommunityDefenders</h1>
             </header>
-            <ScrollArea className="h-72 w-48 rounded-md border">
+            <ScrollArea className="h-80 rounded-md border">
                 <div className="p-4">
                 <h4 className="mb-4 text-sm font-medium leading-none">Tags</h4>
                     {tags.map((tag) => (
