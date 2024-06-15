@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import Header from "./Header"
 
 const tags = Array.from({ length: 50 }).map(
     (_, i, a) => `v1.2.0-beta.${a.length - i}`
@@ -7,11 +8,9 @@ const tags = Array.from({ length: 50 }).map(
 
 export default function CallerList() {
     return (
-        <div className="px-1">
-            <header className="bg-white shadow p-4">
-                <h1 className="text-l font-semibold">CommunityDefenders</h1>
-            </header>
-            <ScrollArea className="h-80 rounded-md border">
+        <div className="h-screen">
+            <Header />
+            <ScrollArea className="h-full w-full rounded-md border">
                 <div className="p-4">
                 <h4 className="mb-4 text-sm font-medium leading-none">Tags</h4>
                     {tags.map((tag) => (
