@@ -17,6 +17,14 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+.red-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin: 0.3em;
+  background-color: red;
+  display: inline-block;
+}
 
 @keyframes logo-spin {
   from {
