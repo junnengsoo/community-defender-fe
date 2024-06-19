@@ -57,6 +57,7 @@ function App() {
               opsCentre={caller.opsCentre}
               messages={caller.messages}
               extractedMessages={caller.extractedMessages}
+              isLiveCall={caller.isLiveCall}
             />
           )}
         </div>

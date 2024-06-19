@@ -23,6 +23,7 @@ interface CallerCardProps {
   opsCentre: string;
   messages: Message[];
   extractedMessages: string;
+  isLiveCall: boolean;
 }
 
 export default function CallerCard({
@@ -33,6 +34,7 @@ export default function CallerCard({
   opsCentre,
   messages,
   extractedMessages,
+  isLiveCall,
 }: CallerCardProps) {
   
   // Define the onClick handlers
@@ -59,6 +61,7 @@ export default function CallerCard({
         </div>
         <div className="text-right flex-none">
           <div className="flex items-center">
+            {isLiveCall && <span className="red-dot"></span>}
             <span className="text-sm text-gray-500">{callTime}</span>
             <PhoneMissed className="text-red-500 cursor-pointer" onClick={handlePhoneMissedClick} />
           </div>
