@@ -17,6 +17,14 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+.border-black {
+  border-color: black;
+}
+
+.border-transparent {
+  border-color: transparent;
+}
+
 .red-dot {
   width: 8px;
   height: 8px;

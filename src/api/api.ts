@@ -7,7 +7,7 @@ export interface Caller {
     opsCentre: string;
     isLiveCall: boolean;
     messages: { sender: string; text: string }[];
-    additionalInfo: string;
+    extractedMessages: string;
   }
   
   // Function to get the list of callers

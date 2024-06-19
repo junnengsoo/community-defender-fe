@@ -1,5 +1,3 @@
-// src/components/CallerCard.tsx
-
 import {
   Card,
   CardContent,
@@ -10,7 +8,7 @@ import {
 } from "@/components/ui/card"; // Adjust the import path as needed
 import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust the import path as needed
 import { Button } from "@/components/ui/button"; // Adjust the import path as needed
-import { PhoneOutgoing, User, Home, PhoneMissed } from "lucide-react";
+import { PhoneOutgoing, Home, PhoneMissed } from "lucide-react";
 
 interface Message {
   sender: string;
@@ -24,7 +22,7 @@ interface CallerCardProps {
   callTime: string;
   opsCentre: string;
   messages: Message[];
-  additionalInfo: string;
+  extractedMessages: string;
 }
 
 export default function CallerCard({
@@ -34,8 +32,20 @@ export default function CallerCard({
   callTime,
   opsCentre,
   messages,
-  additionalInfo,
+  extractedMessages,
 }: CallerCardProps) {
+  
+  // Define the onClick handlers
+  const handlePhoneMissedClick = () => {
+    console.log('PhoneMissed icon clicked');
+    // Add your logic here
+  };
+
+  const handleButtonClick = () => {
+    console.log('1777 button clicked');
+    // Add your logic here
+  };
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="bg-white p-2 flex flex-row">
@@ -48,17 +58,18 @@ export default function CallerCard({
           </CardDescription>
         </div>
         <div className="text-right flex-none">
-          <div className="flex">
+          <div className="flex items-center">
             <span className="text-sm text-gray-500">{callTime}</span>
-            <PhoneMissed className="text-red-500" />
+            <PhoneMissed className="text-red-500 cursor-pointer" onClick={handlePhoneMissedClick} />
           </div>
-          <div className="flex">
+          <div className="flex items-center mt-2">
             <Button
               variant="outline"
-              className="px-1 py-0 bg-yellow-500 text-white"
+              className="px-1 py-0 bg-yellow-500 text-white flex items-center"
+              onClick={handleButtonClick}
             >
               <PhoneOutgoing className="h-5 w-5" />
-              <span className="ml-1">{opsCentre}</span>
+              <span className="ml-1">1777</span>
             </Button>
           </div>
         </div>
@@ -78,7 +89,7 @@ export default function CallerCard({
       </CardContent>
       <CardFooter className="bg-white h-1/4 grow flex flex-col p-2">
         <ScrollArea className="w-full rounded-md border">
-          <p className="text-gray-500">{additionalInfo}</p>
+          <p className="text-gray-500">{extractedMessages}</p>
         </ScrollArea>
       </CardFooter>
     </Card>

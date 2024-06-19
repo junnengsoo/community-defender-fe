@@ -44,7 +44,7 @@ function App() {
   return (
     <div className="grid h-screen w-screen grid-flow-row grid-cols-5 grid-rows-2">
       <div className="h-screen col-span-1 row-span-3">
-        <CallerList onCallerClick={handleCallerClick} />
+        <CallerList onCallerClick={handleCallerClick} selectedCallers={selectedCallers}/>
       </div>
       {selectedCallers.map((caller, index) => (
         <div key={index} className="col-span-2 overflow-hidden">
@@ -56,7 +56,7 @@ function App() {
               callTime={caller.callTime}
               opsCentre={caller.opsCentre}
               messages={caller.messages}
-              additionalInfo={caller.additionalInfo}
+              extractedMessages={caller.extractedMessages}
             />
           )}
         </div>

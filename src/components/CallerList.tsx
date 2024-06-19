@@ -6,8 +6,9 @@ import CallerListCard from "@/components/CallerListCard"; // Adjust the import p
 import { getCallers, Caller } from "@/api/api"; // Import the API function
 
 interface CallerListProps {
-  onCallerClick: (caller: Caller) => void;
-}
+    onCallerClick: (caller: Caller) => void;
+    selectedCallers: (Caller | null)[];
+  }
 
 const dummyCallers = Array.from({ length: 50 }).map((_, i) => ({
   name: `Caller ${i + 1}`,
@@ -20,11 +21,11 @@ const dummyCallers = Array.from({ length: 50 }).map((_, i) => ({
     sender: j % 2 === 0 ? "You" : "Caller",
     text: `Message ${j + 1}`,
   })),
-  additionalInfo: `Additional info for caller ${i + 1}`,
+  extractedMessages: `Extracted messages for caller ${i + 1}`,
 }));
 
-export default function CallerList({ onCallerClick }: CallerListProps) {
-  const [callers, setCallers] = useState<Caller[]>([]);
+export default function CallerList({ onCallerClick, selectedCallers }: CallerListProps) {
+    const [callers, setCallers] = useState<Caller[]>([]);
 
   useEffect(() => {
     // Fetch callers from API
@@ -55,6 +56,7 @@ export default function CallerList({ onCallerClick }: CallerListProps) {
                 callTime={caller.callTime}
                 opsCentre={caller.opsCentre}
                 isLiveCall={caller.isLiveCall}
+                isSelected={selectedCallers.some(selected => selected?.name === caller.name)}
               />
               <Separator className="my-2" />
             </div>
