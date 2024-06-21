@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card"; // Adjust the import path as needed
 import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust the import path as needed
 import { Button } from "@/components/ui/button"; // Adjust the import path as needed
-import { PhoneOutgoing, Home, PhoneMissed } from "lucide-react";
+import { PhoneOutgoing, Home, PhoneMissed, Phone } from "lucide-react";
 
 interface Message {
   sender: string;
@@ -56,7 +56,9 @@ export default function CallerCard({
           <CardDescription className="flex items-center text-lg">
             <span className="text-red-600">{condition}</span>
             <Home className="h-5 w-5 text-blue-500 ml-2" />
-            <span>{address}</span>
+            <span className="px-2">{address}</span>
+            <Phone className="h-5 w-5 text-gray-500 ml-2" />
+            <span className="px-2">{opsCentre}</span>
           </CardDescription>
         </div>
         <div className="text-right flex-none">

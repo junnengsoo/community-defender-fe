@@ -3,7 +3,7 @@ import Header from "@/components/Header"; // Adjust the import path as needed
 import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust the import path as needed
 import { Separator } from "@/components/ui/separator"; // Adjust the import path as needed
 import CallerListCard from "@/components/CallerListCard"; // Adjust the import path as needed
-import { getCallers, Caller } from "@/api/api"; // Import the API function
+import { Caller } from "@/api/api"; // Import the API function
 
 interface CallerListProps {
     onCallerClick: (caller: Caller) => void;
@@ -40,6 +40,7 @@ export default function CallerList({ onCallerClick, selectedCallers }: CallerLis
 
     // fetchCallers();
     setCallers(dummyCallers);
+    console.log(selectedCallers)
   }, []);
 
   return (
@@ -47,7 +48,7 @@ export default function CallerList({ onCallerClick, selectedCallers }: CallerLis
       <Header />
       <ScrollArea className="h-full w-full rounded-md border">
         <div className="p-4">
-          {callers.map((caller, index) => (
+          {callers.map((caller) => (
             <div key={caller.name} onClick={() => onCallerClick(caller)}>
               <CallerListCard
                 name={caller.name}
