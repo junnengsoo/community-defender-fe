@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import CallerList from "./components/CallerList";
 import CallerCard from "./components/CallerCard";
-import { Caller } from "./api/api"; // Adjust the import path as needed
+import { Caller, getCallers } from "./api/api"; // Adjust the import path as needed
 
 function App() {
   const [selectedCallers, setSelectedCallers] = useState<(Caller | null)[]>([
@@ -11,6 +11,7 @@ function App() {
     null,
     null,
   ]);
+  const [callers, setCallers] = useState<Caller[]>([]);
   const [clickOrder, setClickOrder] = useState<number[]>([]);
 
   const handleCallerClick = (caller: Caller) => {
@@ -42,48 +43,95 @@ function App() {
   };
 
   const handleNameChange = (index: number, newName: string) => {
-    setSelectedCallers((prevSelectedCallers) => {
-      const newSelectedCallers = [...prevSelectedCallers];
-      if (newSelectedCallers[index]) {
-        newSelectedCallers[index] = {
-          ...newSelectedCallers[index],
+    setCallers((prevCallers) => {
+      const newCallers = [...prevCallers];
+      if (newCallers[index]) {
+        newCallers[index] = {
+          ...newCallers[index],
           name: newName,
         };
       }
-      return newSelectedCallers;
+      return newCallers;
+    });
+
+    setSelectedCallers((prevCallers) => {
+      const newCallers = [...prevCallers];
+      if (newCallers[index]) {
+        newCallers[index] = {
+          ...newCallers[index],
+          name: newName,
+        };
+      }
+      return newCallers;
     });
   };
 
   const handleConditionChange = (index: number, newCondition: string) => {
-    setSelectedCallers((prevSelectedCallers) => {
-      const newSelectedCallers = [...prevSelectedCallers];
-      if (newSelectedCallers[index]) {
-        newSelectedCallers[index] = {
-          ...newSelectedCallers[index],
+    setCallers((prevCallers) => {
+      const newCallers = [...prevCallers];
+      if (newCallers[index]) {
+        newCallers[index] = {
+          ...newCallers[index],
           condition: newCondition,
         };
       }
-      return newSelectedCallers;
+      return newCallers;
+    });
+
+    setSelectedCallers((prevCallers) => {
+      const newCallers = [...prevCallers];
+      if (newCallers[index]) {
+        newCallers[index] = {
+          ...newCallers[index],
+          condition: newCondition,
+        };
+      }
+      return newCallers;
     });
   };
 
   const handleAddressChange = (index: number, newAddress: string) => {
-    setSelectedCallers((prevSelectedCallers) => {
-      const newSelectedCallers = [...prevSelectedCallers];
-      if (newSelectedCallers[index]) {
-        newSelectedCallers[index] = {
-          ...newSelectedCallers[index],
+    setCallers((prevCallers) => {
+      const newCallers = [...prevCallers];
+      if (newCallers[index]) {
+        newCallers[index] = {
+          ...newCallers[index],
           address: newAddress,
         };
       }
-      return newSelectedCallers;
+      return newCallers;
+    });
+
+    setSelectedCallers((prevCallers) => {
+      const newCallers = [...prevCallers];
+      if (newCallers[index]) {
+        newCallers[index] = {
+          ...newCallers[index],
+          address: newAddress,
+        };
+      }
+      return newCallers;
     });
   };
+
+  useEffect(() => {
+    async function fetchCallers() {
+      try {
+        const data = await getCallers(); // Assuming getCallers is a function that fetches the caller data
+        console.log(data, "success");
+        setCallers(data);
+      } catch (error) {
+        console.error('Failed to fetch callers', error);
+      }
+    }
+
+    fetchCallers();
+  }, []);
 
   return (
     <div className="grid h-screen w-screen grid-flow-row grid-cols-5 grid-rows-2">
       <div className="h-screen col-span-1 row-span-3">
-        <CallerList onCallerClick={handleCallerClick} selectedCallers={selectedCallers}/>
+        <CallerList onCallerClick={handleCallerClick} selectedCallers={selectedCallers} callers={callers} />
       </div>
       {selectedCallers.map((caller, index) => (
         <div key={index} className="col-span-2 overflow-hidden">
