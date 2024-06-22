@@ -17,7 +17,7 @@ function App() {
   const handleCallerClick = (caller: Caller) => {
     setSelectedCallers((prevSelectedCallers) => {
       const newSelectedCallers = [...prevSelectedCallers];
-      const existingIndex = newSelectedCallers.findIndex(selected => selected?.name === caller.name);
+      const existingIndex = newSelectedCallers.findIndex(selected => selected?.id === caller.id);
 
       if (existingIndex !== -1) {
         // If the caller is already selected, deselect it
@@ -42,75 +42,51 @@ function App() {
     });
   };
 
-  const handleNameChange = (index: number, newName: string) => {
+  const handleNameChange = (id: number, newName: string) => {
     setCallers((prevCallers) => {
-      const newCallers = [...prevCallers];
-      if (newCallers[index]) {
-        newCallers[index] = {
-          ...newCallers[index],
-          name: newName,
-        };
-      }
+      const newCallers = prevCallers.map((caller) => 
+        caller.id === id ? { ...caller, name: newName } : caller
+      );
       return newCallers;
     });
 
-    setSelectedCallers((prevCallers) => {
-      const newCallers = [...prevCallers];
-      if (newCallers[index]) {
-        newCallers[index] = {
-          ...newCallers[index],
-          name: newName,
-        };
-      }
-      return newCallers;
+    setSelectedCallers((prevSelectedCallers) => {
+      const newSelectedCallers = prevSelectedCallers.map((caller) =>
+        caller?.id === id ? { ...caller, name: newName } : caller
+      );
+      return newSelectedCallers;
     });
   };
 
-  const handleConditionChange = (index: number, newCondition: string) => {
+  const handleConditionChange = (id: number, newCondition: string) => {
     setCallers((prevCallers) => {
-      const newCallers = [...prevCallers];
-      if (newCallers[index]) {
-        newCallers[index] = {
-          ...newCallers[index],
-          condition: newCondition,
-        };
-      }
+      const newCallers = prevCallers.map((caller) => 
+        caller.id === id ? { ...caller, condition: newCondition } : caller
+      );
       return newCallers;
     });
 
-    setSelectedCallers((prevCallers) => {
-      const newCallers = [...prevCallers];
-      if (newCallers[index]) {
-        newCallers[index] = {
-          ...newCallers[index],
-          condition: newCondition,
-        };
-      }
-      return newCallers;
+    setSelectedCallers((prevSelectedCallers) => {
+      const newSelectedCallers = prevSelectedCallers.map((caller) =>
+        caller?.id === id ? { ...caller, condition: newCondition } : caller
+      );
+      return newSelectedCallers;
     });
   };
 
-  const handleAddressChange = (index: number, newAddress: string) => {
+  const handleAddressChange = (id: number, newAddress: string) => {
     setCallers((prevCallers) => {
-      const newCallers = [...prevCallers];
-      if (newCallers[index]) {
-        newCallers[index] = {
-          ...newCallers[index],
-          address: newAddress,
-        };
-      }
+      const newCallers = prevCallers.map((caller) => 
+        caller.id === id ? { ...caller, address: newAddress } : caller
+      );
       return newCallers;
     });
 
-    setSelectedCallers((prevCallers) => {
-      const newCallers = [...prevCallers];
-      if (newCallers[index]) {
-        newCallers[index] = {
-          ...newCallers[index],
-          address: newAddress,
-        };
-      }
-      return newCallers;
+    setSelectedCallers((prevSelectedCallers) => {
+      const newSelectedCallers = prevSelectedCallers.map((caller) =>
+        caller?.id === id ? { ...caller, address: newAddress } : caller
+      );
+      return newSelectedCallers;
     });
   };
 
@@ -118,7 +94,6 @@ function App() {
     async function fetchCallers() {
       try {
         const data = await getCallers(); // Assuming getCallers is a function that fetches the caller data
-        console.log(data, "success");
         setCallers(data);
       } catch (error) {
         console.error('Failed to fetch callers', error);
@@ -144,9 +119,9 @@ function App() {
               messages={caller.messages}
               extractedMessages={caller.extractedMessages}
               isLiveCall={caller.isLiveCall}
-              onNameChange={(newName) => handleNameChange(index, newName)}
-              onConditionChange={(newCondition) => handleConditionChange(index, newCondition)}
-              onAddressChange={(newAddress) => handleAddressChange(index, newAddress)}
+              onNameChange={(newName) => handleNameChange(caller.id, newName)}
+              onConditionChange={(newCondition) => handleConditionChange(caller.id, newCondition)}
+              onAddressChange={(newAddress) => handleAddressChange(caller.id, newAddress)}
             />
           )}
         </div>

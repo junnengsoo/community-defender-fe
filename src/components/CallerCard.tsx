@@ -15,6 +15,7 @@ interface Message {
 }
 
 interface CallerCardProps {
+  id: number;
   name: string;
   condition: string;
   address: string;
@@ -28,6 +29,7 @@ interface CallerCardProps {
 }
 
 export default function CallerCard({
+  id,
   name,
   condition,
   address,

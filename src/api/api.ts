@@ -8,6 +8,7 @@ export const getCallers = async (): Promise<Caller[]> => {
   // return data;
 
   const dummyCallers = Array.from({ length: 50 }).map((_, i) => ({
+    id: i + 1,
     name: `Caller ${i + 1}`,
     condition: "test condition", // Change this to "Cardiac Arrest" or "Stroke" for testing
     address: `Address ${i + 1}`,
@@ -25,11 +26,12 @@ export const getCallers = async (): Promise<Caller[]> => {
 
 // Mock data structure for Caller
 export interface Caller {
+  id: number;
   name: string;
   condition: string;
   address: string;
   callTime: string;
+  messages: string[];
+  extractedMessages: string[];
   isLiveCall: boolean;
-  messages: { sender: string; text: string }[];
-  extractedMessages: string;
 }
