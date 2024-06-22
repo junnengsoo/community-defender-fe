@@ -11,6 +11,31 @@ interface CallerListProps {
   callers: Caller[];
 }
 
+const transcript = ["911, what's your emergency?","Hi, I need help! There's been a car accident on 324 Maple Street.",
+  "Okay, I understand. Are you or anyone else injured?", 
+  "Yes, there's a woman who looks seriously hurt. She's not responding.",
+  "I'm dispatching emergency services to your location. Can you tell me if she's breathing?",
+  "I'm not sure. I don't think she is.",
+  "Alright, can you check her pulse or see if her chest is moving?",
+  "Hold on... No, I don't see any movement. What should I do?",
+  "Stay calm. Help is on the way. Do you know CPR?",
+  "Yes, but it's been a while since I learned.",
+  "That's okay. I can guide you through it. First, tilt her head back slightly to open her airway."]
+
+const dummyCallers = Array.from({ length: 5 }).map((_, i) => ({
+  name: `Caller ${i + 1}`,
+  condition: 'Unknown', // Change this to "Cardiac Arrest" or "Stroke" for testing
+  address: `Address ${i + 1}`,
+  callTime: `00:${String(i).padStart(2, '0')}`,
+  opsCentre: 'Ops Centre 1',
+  isLiveCall: i % 2 === 0,
+  messages: Array.from({ length: 10 }).map((_, j) => ({
+    sender: j % 2 === 0 ? 'Operator' : 'Caller',
+    text: transcript[j],
+  })),
+  extractedMessages: `Extracted messages for caller ${i + 1}`,
+}));
+
 const addSecondToCallTime = (callTime: string) => {
   const [minutes, seconds] = callTime.split(':').map(Number);
   const totalSeconds = minutes * 60 + seconds + 1;
@@ -33,7 +58,7 @@ const updateNameAndAddress = async (caller: Caller): Promise<Caller> => {
   let fetchedName = caller.name;
   let fetchedAddress = caller.address;
 
-  if (caller.name === "Caller 1" || caller.address === "Unknown") {
+  if (caller.name === "Caller 1" || caller.address === "Unknown") { // to change
     try {
       const response = await fetch("http://127.0.0.1:5003/identify-details", {
         method: 'POST',
@@ -101,6 +126,66 @@ const updateCondition = async (caller: Caller): Promise<Caller> => {
   return caller;
 };
 
+const extractSummary = async (caller: Caller): Promise<Caller> => {
+  const currentTranscript = caller.messages.map(m => m.sender + ": " + m.text).join(' ');
+  let extractedMessages = caller.extractedMessages;
+  try {
+    const response = await fetch("http://127.0.0.1:5002/summarize", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ "text": currentTranscript, "is_first": true}),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const details = await response.json();
+    console.log(details);
+    extractedMessages = details?.summary ?? extractedMessages;
+
+    return {
+      ...caller,
+      extractedMessages: extractedMessages,
+    };
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return caller;
+  }
+};
+
+const extractSummary = async (caller: Caller): Promise<Caller> => {
+  const currentTranscript = caller.messages.map(m => m.sender + ": " + m.text).join(' ');
+  let extractedMessages = caller.extractedMessages;
+  try {
+    const response = await fetch("http://127.0.0.1:5002/summarize", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ "text": currentTranscript, "is_first": true}),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const details = await response.json();
+    console.log(details);
+    extractedMessages = details?.summary ?? extractedMessages;
+
+    return {
+      ...caller,
+      extractedMessages: extractedMessages,
+    };
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return caller;
+  }
+};
+
 export default function CallerList({ onCallerClick, selectedCallers, callers: initialCallers }: CallerListProps) {
   const [callers, setCallers] = useState<Caller[]>([]);
   
@@ -166,11 +251,32 @@ useEffect(() => {
       });
     }, 20000);
 
+    const summaryInterval = setInterval(() => {
+      setCallers(prevCallers => {
+        const fetchAndUpdateCallers = async () => {
+          try {
+            console.log("Extracting keywords");
+            const updatedCallers = await Promise.all(prevCallers.map(extractSummary));
+            return updatedCallers;
+          } catch (error) {
+            console.error("Error updating callers:", error);
+            return prevCallers; // Return previous state in case of error
+          }
+        };
+
+        fetchAndUpdateCallers().then(updatedCallers => {
+          if (updatedCallers) setCallers(updatedCallers);
+        });
+        return prevCallers; // Return the previous state immediately
+      });
+    }, 20000);
+
     // Clear interval on component unmount
     return () => {
       clearInterval(callTimeInterval);
       clearInterval(nameAddressInterval);
       clearInterval(conditionInterval);
+      clearInterval(summaryInterval);
     };
 
   }, []); // Empty dependency array means this effect runs once on mount
