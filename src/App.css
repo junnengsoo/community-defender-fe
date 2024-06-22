@@ -11,12 +11,15 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+
 .border-black {
   border-color: black;
 }
@@ -29,7 +32,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin: 0.3em;
+  margin: 0em;
   background-color: red;
   display: inline-block;
 }
@@ -38,6 +41,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

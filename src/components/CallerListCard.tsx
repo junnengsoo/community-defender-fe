@@ -10,7 +10,6 @@ interface CallerListCardProps {
   condition: string;
   address: string;
   callTime: string;
-  opsCentre: string;
   isLiveCall: boolean;
   isSelected: boolean;
 }
@@ -20,7 +19,6 @@ export default function CallerListCard({
   condition,
   address,
   callTime,
-  opsCentre,
   isLiveCall,
   isSelected,
 }: CallerListCardProps) {
@@ -35,7 +33,6 @@ export default function CallerListCard({
               <div className="flex items-center space-x-2">
                 {isLiveCall && <span className="red-dot"></span>}
                 <span className="text-sm text-gray-500">{callTime}</span>
-                <span className="text-sm text-gray-500 ml-2">{opsCentre}</span>
               </div>
               <div className="flex items-center">
                 <span>{address}</span>
