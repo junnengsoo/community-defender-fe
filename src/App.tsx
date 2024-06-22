@@ -41,6 +41,45 @@ function App() {
     });
   };
 
+  const handleNameChange = (index: number, newName: string) => {
+    setSelectedCallers((prevSelectedCallers) => {
+      const newSelectedCallers = [...prevSelectedCallers];
+      if (newSelectedCallers[index]) {
+        newSelectedCallers[index] = {
+          ...newSelectedCallers[index],
+          name: newName,
+        };
+      }
+      return newSelectedCallers;
+    });
+  };
+
+  const handleConditionChange = (index: number, newCondition: string) => {
+    setSelectedCallers((prevSelectedCallers) => {
+      const newSelectedCallers = [...prevSelectedCallers];
+      if (newSelectedCallers[index]) {
+        newSelectedCallers[index] = {
+          ...newSelectedCallers[index],
+          condition: newCondition,
+        };
+      }
+      return newSelectedCallers;
+    });
+  };
+
+  const handleAddressChange = (index: number, newAddress: string) => {
+    setSelectedCallers((prevSelectedCallers) => {
+      const newSelectedCallers = [...prevSelectedCallers];
+      if (newSelectedCallers[index]) {
+        newSelectedCallers[index] = {
+          ...newSelectedCallers[index],
+          address: newAddress,
+        };
+      }
+      return newSelectedCallers;
+    });
+  };
+
   return (
     <div className="grid h-screen w-screen grid-flow-row grid-cols-5 grid-rows-2">
       <div className="h-screen col-span-1 row-span-3">
@@ -54,10 +93,12 @@ function App() {
               condition={caller.condition}
               address={caller.address}
               callTime={caller.callTime}
-              opsCentre={caller.opsCentre}
               messages={caller.messages}
               extractedMessages={caller.extractedMessages}
               isLiveCall={caller.isLiveCall}
+              onNameChange={(newName) => handleNameChange(index, newName)}
+              onConditionChange={(newCondition) => handleConditionChange(index, newCondition)}
+              onAddressChange={(newAddress) => handleAddressChange(index, newAddress)}
             />
           )}
         </div>

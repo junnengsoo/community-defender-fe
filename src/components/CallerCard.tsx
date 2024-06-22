@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"; // Adjust the import path as needed
 import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust the import path as needed
-import { Button } from "@/components/ui/button"; // Adjust the import path as needed
 import { PhoneForwarded, Home, PhoneMissed } from "lucide-react";
 
 interface Message {
@@ -23,6 +22,9 @@ interface CallerCardProps {
   messages: Message[];
   extractedMessages: string;
   isLiveCall: boolean;
+  onNameChange: (newName: string) => void;
+  onConditionChange: (newCondition: string) => void;
+  onAddressChange: (newAddress: string) => void;
 }
 
 export default function CallerCard({
@@ -33,16 +35,19 @@ export default function CallerCard({
   messages,
   extractedMessages,
   isLiveCall,
+  onNameChange,
+  onConditionChange,
+  onAddressChange,
 }: CallerCardProps) {
   
   // Define the onClick handlers
-  const handlePhoneMissedClick = () => {
-    console.log('PhoneMissed icon clicked');
+  const handleDropCallClick = () => {
+    console.log('Call dropped');
     // Add your logic here
   };
 
-  const handleButtonClick = () => {
-    console.log('1777 button clicked');
+  const handle1777Click = () => {
+    console.log('Revert to 1777');
     // Add your logic here
   };
 
@@ -50,19 +55,39 @@ export default function CallerCard({
     <Card className="h-full flex flex-col">
       <CardHeader className="bg-white p-2 flex flex-row">
         <div className="grow">
-          <CardTitle className="text-left text-2xl">{name}</CardTitle>
-          <CardDescription className="flex items-center text-lg">
-            <span className="text-red-600">{condition}</span>
+          <CardTitle className="text-left text-2xl">
+            <input
+              className="border-none"
+              type="text"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+            />
+          </CardTitle>
+          <CardDescription className="flex items-center text-lg space-x-2">
+            <select
+              className="border-none"
+              value={condition}
+              onChange={(e) => onConditionChange(e.target.value)}
+            >
+              <option value="urgent">Urgent</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
+            </select>
             <Home className="h-5 w-5 text-blue-500 ml-2" />
-            <span className="px-2">{address}</span>
+            <input
+              className="border-none px-2"
+              type="text"
+              value={address}
+              onChange={(e) => onAddressChange(e.target.value)}
+            />
           </CardDescription>
         </div>
         <div className="text-right flex-none">
           <div className="flex items-center space-x-2">
             {isLiveCall && <span className="red-dot"></span>}
             <span className="text-sm text-gray-500">{callTime}</span>
-            <PhoneMissed className="text-red-500 cursor-pointer" onClick={handlePhoneMissedClick} />
-            <PhoneForwarded className="text-orange-600 cursor-pointer" onClick={handleButtonClick}/>
+            <PhoneMissed className="text-red-500 cursor-pointer" onClick={handleDropCallClick} />
+            <PhoneForwarded className="text-orange-600 cursor-pointer" onClick={handle1777Click}/>
           </div>
         </div>
       </CardHeader>
