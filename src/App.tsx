@@ -5,60 +5,29 @@ import CallerCard from "./components/CallerCard";
 import { Caller, getCallers } from "./api/api"; // Adjust the import path as needed
 
 function App() {
-  const [selectedCallers, setSelectedCallers] = useState<(Caller | null)[]>([
-    null,
-    null,
-    null,
-    null,
-  ]);
   const [callers, setCallers] = useState<Caller[]>([]);
-  const [clickOrder, setClickOrder] = useState<number[]>([]);
+  const [selectedCallerIds, setselectedCallerIds] = useState<number[]>([]);
 
-  const handleCallerClick = (caller: Caller) => {
-    setSelectedCallers((prevSelectedCallers) => {
-      const newSelectedCallers = [...prevSelectedCallers];
-      const existingIndex = newSelectedCallers.findIndex(selected => selected?.id === caller.id);
-
-      if (existingIndex !== -1) {
-        // If the caller is already selected, deselect it
-        newSelectedCallers[existingIndex] = null;
-        setClickOrder((prevOrder) => prevOrder.filter((index) => index !== existingIndex));
-      } else {
-        // Find the first empty div or replace the oldest clicked div
-        const emptyIndex = newSelectedCallers.findIndex(selected => selected === null);
-        const indexToReplace = emptyIndex !== -1 ? emptyIndex : clickOrder[0];
-
-        newSelectedCallers[indexToReplace] = caller;
-
-        // Update the click order
-        setClickOrder((prevOrder) => {
-          const newOrder = [...prevOrder.filter((index) => index !== indexToReplace), indexToReplace];
-          if (newOrder.length > 4) newOrder.shift();
-          return newOrder;
-        });
-      }
-
-      return newSelectedCallers;
-    });
+    const handleCallerClick = (callerToEdit: Caller) => {
+    if (!selectedCallerIds.some(callerId => callerId === callerToEdit.id)) { // add caller to selected caller list
+      setselectedCallerIds(prevSelectedCallers => [...prevSelectedCallers, callerToEdit.id]);
+    } else {
+      setselectedCallerIds(prevSelectedCallers =>
+        prevSelectedCallers.filter(callerId => callerId !== callerToEdit.id)
+      );
+    }
   };
 
-  const handleNameChange = (id: number, newName: string) => {
+  const handleNameChange = (id: number, newName: string) => { 
     setCallers((prevCallers) => {
       const newCallers = prevCallers.map((caller) => 
         caller.id === id ? { ...caller, name: newName } : caller
       );
       return newCallers;
     });
-
-    setSelectedCallers((prevSelectedCallers) => {
-      const newSelectedCallers = prevSelectedCallers.map((caller) =>
-        caller?.id === id ? { ...caller, name: newName } : caller
-      );
-      return newSelectedCallers;
-    });
   };
 
-  const handleConditionChange = (id: number, newCondition: string) => {
+  const handleConditionChange = (id: number, newCondition: string) => { // to fix
     setCallers((prevCallers) => {
       const newCallers = prevCallers.map((caller) => 
         caller.id === id ? { ...caller, condition: newCondition } : caller
@@ -66,12 +35,6 @@ function App() {
       return newCallers;
     });
 
-    setSelectedCallers((prevSelectedCallers) => {
-      const newSelectedCallers = prevSelectedCallers.map((caller) =>
-        caller?.id === id ? { ...caller, condition: newCondition } : caller
-      );
-      return newSelectedCallers;
-    });
   };
 
   const handleAddressChange = (id: number, newAddress: string) => {
@@ -82,14 +45,9 @@ function App() {
       return newCallers;
     });
 
-    setSelectedCallers((prevSelectedCallers) => {
-      const newSelectedCallers = prevSelectedCallers.map((caller) =>
-        caller?.id === id ? { ...caller, address: newAddress } : caller
-      );
-      return newSelectedCallers;
-    });
   };
 
+  // Initialisation with dummy data
   useEffect(() => {
     async function fetchCallers() {
       try {
@@ -99,34 +57,242 @@ function App() {
         console.error('Failed to fetch callers', error);
       }
     }
-
     fetchCallers();
   }, []);
 
+  useEffect(() => {
+    setCallers((prevCallers) =>
+    prevCallers.map((caller) => ({
+      ...caller,
+      isSelected: selectedCallerIds.some((selected) => selected === caller.id),
+    }))
+  );
+  }, [selectedCallerIds]);
+
+  const addSecondToCallTime = (callTime: string) => {
+    const [minutes, seconds] = callTime.split(':').map(Number);
+    const totalSeconds = minutes * 60 + seconds + 1;
+    const newMinutes = Math.floor(totalSeconds / 60) % 60;
+    const newSeconds = totalSeconds % 60;
+    const newTime = `${String(newMinutes).padStart(2, '0')}:${String(newSeconds).padStart(2, '0')}`;
+    return newTime;
+  };
+
+  const updateCallTimes = (callers: Caller[]) => {
+    return callers.map((caller) => ({
+      ...caller,
+      callTime: addSecondToCallTime(caller.callTime),
+    }));
+  };
+
+  const updateNameAndAddress = async (caller: Caller): Promise<Caller> => {
+    const currentTranscript = caller.messages.map(m => m.sender + ": " + m.text).join(' ');
+    console.log(currentTranscript)
+    let fetchedName = caller.name;
+    let fetchedAddress = caller.address;
+
+    if (caller.name === "Caller 1" || caller.address === "Unknown") { // to change
+      try {
+        const response = await fetch("http://127.0.0.1:5003/identify-details", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ "text": currentTranscript }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const details = await response.json();
+        console.log(details);
+        fetchedName = details?.name ?? "Unknown";
+        fetchedAddress = details?.address ?? "Unknown";
+
+        return {
+          ...caller,
+          name: fetchedName,
+          address: fetchedAddress,
+        };
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        caller.name = "haha"; // to remove
+        console.log(caller)
+        console.log(caller.callTime)
+        return caller;
+      }
+    }
+    return caller;
+  };
+
+  const updateCondition = async (caller: Caller): Promise<Caller> => {
+    const currentTranscript = caller.messages.map(m => m.sender + ": " + m.text).join(' ');
+    let fetchedCondition = caller.condition;
+    if (caller.condition === "Initial") { // consider removing
+      try {
+        const response = await fetch("http://127.0.0.1:5003/identify-condition", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ "text": currentTranscript }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const details = await response.json();
+        console.log(details);
+        fetchedCondition = details?.condition ?? "Unknown";
+
+        return {
+          ...caller,
+          condition: fetchedCondition,
+        };
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        return caller;
+      }
+    }
+    return caller;
+  };
+
+  const extractSummary = async (caller: Caller): Promise<Caller> => {
+    const currentTranscript = caller.messages.map(m => m.sender + ": " + m.text).join(' ');
+    let extractedMessages = caller.extractedMessages;
+    try {
+      const response = await fetch("http://127.0.0.1:5002/summarize", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "text": currentTranscript, "is_first": true}),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const details = await response.json();
+      console.log(details);
+      extractedMessages = details?.summary ?? extractedMessages;
+
+      return {
+        ...caller,
+        extractedMessages: extractedMessages,
+      };
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return caller;
+    }
+  };
+
+  useEffect(() => {
+    // Update call times every 1 second
+    const callTimeInterval = setInterval(() => {
+      setCallers(prevCallers => updateCallTimes(prevCallers));
+    }, 1000);
+
+    // Note: If the following updates are run concurrently, the properties of the callers might override
+    // one another, the temporary fix is to have the updates run sequentially. 
+
+    // Update name and address every 20 seconds
+    const nameAddressInterval = setInterval(() => {
+      setCallers(prevCallers => {
+        const fetchAndUpdateCallers = async () => {
+          try {
+            console.log("Fetching and updating callers");
+            const updatedCallers = await Promise.all(prevCallers.map(updateNameAndAddress));
+            console.log("Updated callers:", updatedCallers);
+            return updatedCallers;
+          } catch (error) {
+            console.error("Error updating callers:", error);
+            return prevCallers; // Return previous state in case of error
+          }
+        };
+
+        fetchAndUpdateCallers().then(updatedCallers => {
+          if (updatedCallers) setCallers(updatedCallers);
+        });
+        return prevCallers; // Return the previous state immediately
+      });
+    }, 20000);
+
+    const conditionInterval = setInterval(() => {
+      setCallers(prevCallers => {
+        const fetchAndUpdateCallers = async () => {
+          try {
+            console.log("Identifying condition");
+            const updatedCallers = await Promise.all(prevCallers.map(updateCondition));
+            console.log("Identified condition:", updatedCallers);
+            return updatedCallers;
+          } catch (error) {
+            console.error("Error updating callers:", error);
+            return prevCallers; // Return previous state in case of error
+          }
+        };
+
+        fetchAndUpdateCallers().then(updatedCallers => {
+          if (updatedCallers) setCallers(updatedCallers);
+        });
+        return prevCallers; // Return the previous state immediately
+      });
+    }, 25000);
+
+    const summaryInterval = setInterval(() => {
+      setCallers(prevCallers => {
+        const fetchAndUpdateCallers = async () => {
+          try {
+            console.log("Extracting keywords");
+            const updatedCallers = await Promise.all(prevCallers.map(extractSummary));
+            return updatedCallers;
+          } catch (error) {
+            console.error("Error updating callers:", error);
+            return prevCallers; // Return previous state in case of error
+          }
+        };
+
+        fetchAndUpdateCallers().then(updatedCallers => {
+          if (updatedCallers) setCallers(updatedCallers);
+        });
+        return prevCallers; // Return the previous state immediately
+      });
+    }, 30000);
+
+    // Clear interval on component unmount
+    return () => {
+      clearInterval(callTimeInterval);
+      clearInterval(nameAddressInterval);
+      clearInterval(conditionInterval);
+      clearInterval(summaryInterval);
+    };
+
+  }, []); // Empty dependency array means this effect runs once on mount
+
+
   return (
-    <div className="grid h-screen w-screen grid-flow-row grid-cols-5 grid-rows-2">
-      <div className="h-screen col-span-1 row-span-3">
-        <CallerList onCallerClick={handleCallerClick} selectedCallers={selectedCallers} callers={callers} />
-      </div>
-      {selectedCallers.map((caller, index) => (
-        <div key={index} className="col-span-2 overflow-hidden">
-          {caller && (
-            <CallerCard
-              name={caller.name}
-              condition={caller.condition}
-              address={caller.address}
-              callTime={caller.callTime}
-              messages={caller.messages}
-              extractedMessages={caller.extractedMessages}
-              isLiveCall={caller.isLiveCall}
-              onNameChange={(newName) => handleNameChange(caller.id, newName)}
-              onConditionChange={(newCondition) => handleConditionChange(caller.id, newCondition)}
-              onAddressChange={(newAddress) => handleAddressChange(caller.id, newAddress)}
-            />
-          )}
+      <div className="grid h-screen w-screen grid-flow-row grid-cols-5 grid-rows-2">
+        <div className="h-screen col-span-1 row-span-3">
+          <CallerList
+            onCallerClick={handleCallerClick}
+            selectedCallers={callers.filter(caller => selectedCallerIds.includes(caller.id))}
+            callers={callers}
+          />
         </div>
-      ))}
-    </div>
+        {callers.filter(caller => selectedCallerIds.includes(caller.id)).map((caller, index) => (
+          <div key={index} className="col-span-2 overflow-hidden">
+            {caller && (
+              <CallerCard
+                caller={caller}
+                onNameChange={(newName) => handleNameChange(caller.id, newName)}
+                onAddressChange={(newAddress) => handleAddressChange(caller.id, newAddress)}
+              />
+            )}
+          </div>
+        ))}
+      </div>
   );
 }
 

@@ -4,40 +4,31 @@ import {
     CardTitle,
     CardDescription,
   } from "@/components/ui/card"; // Adjust the import path as needed
+  import { Caller } from '@/components/CallerTypes';
   
   interface CallerListCardProps {
-    id: number;
-    name: string;
-    condition: string;
-    address: string;
-    callTime: string;
-    isLiveCall: boolean;
+    caller: Caller
     isSelected: boolean;
   }
   
   export default function CallerListCard({
-    id,
-    name,
-    condition,
-    address,
-    callTime,
-    isLiveCall,
+    caller,
     isSelected,
   }: CallerListCardProps) {
     return (
       <Card className={`h-full flex flex-row border-2 ${isSelected ? 'border-black' : 'border-transparent'}`}>
         <CardHeader className="bg-white p-2 flex flex-col w-full">
           <div className="flex justify-between items-center w-full">
-            <CardTitle className="text-left text-xl">{name}</CardTitle>
-            <p className="text-red-600">{condition}</p>
+            <CardTitle className="text-left text-xl">{caller.name}</CardTitle>
+            <p className="text-red-600">{caller.condition}</p>
           </div>
           <CardDescription className="flex justify-between items-center text-lg w-full mt-2">
             <div className="flex items-center space-x-2">
-              {isLiveCall && <span className="red-dot"></span>}
-              <span className="text-sm text-gray-500">{callTime}</span>
+              {caller.isLiveCall && <span className="red-dot"></span>}
+              <span className="text-sm text-gray-500">{caller.callTime}</span>
             </div>
             <div className="flex items-center">
-              <span>{address}</span>
+              <span>{caller.address}</span>
             </div>
           </CardDescription>
         </CardHeader>
