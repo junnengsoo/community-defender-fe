@@ -1,12 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
+import io from 'socket.io-client';
 import CallerList from "./components/CallerList";
 import CallerCard from "./components/CallerCard";
-import { Caller, getCallers } from "./api/api"; // Adjust the import path as needed
+import { getCallers } from "./api/api"; 
+import { Caller } from '@/components/CallerTypes';
+
+const socket = io('http://localhost:5001'); // Adjust the URL if needed
 
 function App() {
   const [callers, setCallers] = useState<Caller[]>([]);
   const [selectedCallerIds, setselectedCallerIds] = useState<number[]>([]);
+  const transcriptionStarted = useRef(false);
 
     const handleCallerClick = (callerToEdit: Caller) => {
     if (!selectedCallerIds.some(callerId => callerId === callerToEdit.id)) { // add caller to selected caller list
@@ -47,6 +52,34 @@ function App() {
 
   };
 
+  const startTranscription = (caller: Caller) => {
+    console.log("Starting transcription for " + caller.id.toString());
+    fetch('http://127.0.0.1:5001/transcribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url: caller.url, caller_id: caller.id })
+        });
+
+  }
+
+  useEffect(() => {
+    socket.on('transcription_update', ({ caller_id, line }) => {
+      setCallers(prevCallers =>
+        prevCallers.map(caller =>
+          caller.id === caller_id
+            ? { ...caller, messages: [...caller.messages, line] }
+            : caller
+        )
+      );
+    });
+
+    return () => {
+      socket.off('transcription_update');
+    };
+  }, []);
+
   // Initialisation with dummy data
   useEffect(() => {
     async function fetchCallers() {
@@ -59,6 +92,15 @@ function App() {
     }
     fetchCallers();
   }, []);
+
+  useEffect(() => {
+    if (callers.length > 0 && !transcriptionStarted.current) {
+      console.log("calling start transcription");
+      console.log(callers);
+      callers.forEach(caller => startTranscription(caller));
+      transcriptionStarted.current = true; // Set the flag to true after starting transcription
+    }
+  }, [callers]); // This useEffect runs when callers state changes
 
   useEffect(() => {
     setCallers((prevCallers) =>
@@ -129,7 +171,7 @@ function App() {
   const updateCondition = async (caller: Caller): Promise<Caller> => {
     const currentTranscript = caller.messages.map(m => m.sender + ": " + m.text).join(' ');
     let fetchedCondition = caller.condition;
-    if (caller.condition === "Initial") { // consider removing
+    if (caller.name === "Unknown" && caller.condition === "Initial") { // consider removing
       try {
         const response = await fetch("http://127.0.0.1:5003/identify-condition", {
           method: 'POST',

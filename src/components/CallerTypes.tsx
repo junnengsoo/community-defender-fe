@@ -14,5 +14,6 @@ export interface Message {
     isLiveCall: boolean;
     messages: Message[];
     extractedMessages: string;
+    url: string;
   }
   
