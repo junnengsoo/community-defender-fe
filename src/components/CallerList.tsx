@@ -2,7 +2,7 @@ import Header from "@/components/Header"; // Adjust the import path as needed
 import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust the import path as needed
 import { Separator } from "@/components/ui/separator"; // Adjust the import path as needed
 import CallerListCard from "@/components/CallerListCard"; // Adjust the import path as needed
-import { Caller } from "@/api/api"; // Import the API function
+import { Caller } from "@/components/CallerTypes"; // Import the API function
 
 interface CallerListProps {
   onCallerClick: (caller: Caller) => void;

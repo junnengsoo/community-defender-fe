@@ -60,3 +60,25 @@
 .read-the-docs {
   color: #888;
 }
+
+.message-operator {
+  background-color: #77c1e6;
+  color: black;
+}
+
+.message-caller {
+  background-color: #7e96a1;
+  color: black;
+}
+
+.input-field {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.card-field {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -9,6 +9,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust the import path as needed
 import { PhoneForwarded, Home, PhoneMissed } from "lucide-react";
 import { Caller } from '@/components/CallerTypes';
+import { useRef, useEffect } from 'react';
 
 interface CallerCardProps {
   caller: Caller
@@ -20,19 +21,32 @@ interface CallerCardProps {
 export default function CallerCard({
   caller,
   onNameChange,
-  // onConditionChange,
   onAddressChange,
 }: CallerCardProps) {
-  
-  // Define the onClick handlers
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    const scroll = scrollContainerRef.current;
+    if (scroll) {
+      // +1 accounts for possible rounding issues with clientHeight
+      const isScrolledToBottom = scroll.scrollHeight - scroll.clientHeight <= scroll.scrollTop + 1;
+      if (isScrolledToBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [caller.messages]);
+
   const handleDropCallClick = () => {
     console.log('Call dropped');
-    // Add your logic here
   };
 
   const handle1777Click = () => {
     console.log('Revert to 1777');
-    // Add your logic here
   };
 
   return (
@@ -41,17 +55,17 @@ export default function CallerCard({
         <div className="grow">
           <CardTitle className="text-left text-2xl">
             <input
-              className="border-none"
+              className="border-none input-field"
               type="text"
               value={caller.name}
               onChange={(e) => onNameChange(e.target.value)}
             />
           </CardTitle>
           <CardDescription className="flex items-center text-lg space-x-2">
-            <span className="text-red-600">{caller.condition}</span>
+            <span className="text-red-600 input-field">{caller.condition}</span>
             <Home className="h-5 w-5 text-blue-500 ml-2" />
             <input
-              className="border-none px-2"
+              className="border-none px-2 input-field"
               type="text"
               value={caller.address}
               onChange={(e) => onAddressChange(e.target.value)}
@@ -68,15 +82,16 @@ export default function CallerCard({
         </div>
       </CardHeader>
       <CardContent className="p-2 h-1/2 flex flex-col">
-        <ScrollArea className="w-full rounded-md border">
+        <ScrollArea className="w-full rounded-md border" ref={scrollContainerRef}>
           <div className="my-2">
             {caller.messages.map((message, index) => (
               <div key={index} className="flex py-1">
-                <div className="bg-gray-200 text-sm p-2 mx-2 rounded-lg w-full">
+                <div className={`text-sm p-2 mx-2 rounded-lg w-full ${message.sender === "Operator" ? 'message-operator' : 'message-caller'}`}>
                   <strong>{message.sender}:</strong> {message.text}
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </CardContent>
