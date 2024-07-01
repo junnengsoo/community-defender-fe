@@ -71,6 +71,7 @@ export const getCallers = async (): Promise<Caller[]> => {
       text: transcript[j],
     })),
     extractedMessages: `Extracted messages for caller ${i + 1}`,
+    isOperatorOnline: i === 0,
   }));
 
   return dummyCallers;

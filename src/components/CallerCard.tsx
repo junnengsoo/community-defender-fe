@@ -7,9 +7,16 @@ import {
   CardTitle,
 } from "@/components/ui/card"; // Adjust the import path as needed
 import { ScrollArea } from "@/components/ui/scroll-area"; // Adjust the import path as needed
-import { PhoneForwarded, Home, PhoneMissed } from "lucide-react";
+import { PhoneForwarded, Home, PhoneMissed, Pause, Play } from "lucide-react";
 import { Caller } from '@/components/CallerTypes';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 interface CallerCardProps {
   caller: Caller
@@ -25,6 +32,7 @@ export default function CallerCard({
 }: CallerCardProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isOnHold, setOnHold] = useState(false);
 
   const scrollToBottom = () => {
     const scroll = scrollContainerRef.current;
@@ -41,16 +49,45 @@ export default function CallerCard({
     scrollToBottom();
   }, [caller.messages]);
 
+  const handlePause = () => {
+    console.log('Put call on hold');
+    setOnHold(true);
+    caller.isOperatorOnline = false;
+  };
+
+  const handlePlay = () => {
+    console.log('Reconnect to call');
+    setOnHold(false);
+    caller.isOperatorOnline = true;
+  };
+
   const handleDropCallClick = () => {
     console.log('Call dropped');
+    caller.isOperatorOnline = false;
+    caller.isLiveCall = false;
   };
 
   const handle1777Click = () => {
-    console.log('Revert to 1777');
+    console.log('Recommend to 1777');
   };
 
+  const handleFeedback = () => {
+    console.log('Revert to Feedback');
+  };
+
+  const handleGeneralEnquiries = () => {
+    console.log('Revert to General Enquiries');
+  };
+
+  const handleFireHazard = () => {
+    console.log('Revert to Fire Hazard Reporting');
+  };
+
+  // Apply conditional styling for border color
+  const borderColor = caller.isOperatorOnline ? 'border-green-500' : 'border-grey-200';
+
   return (
-    <Card className="h-full flex flex-col">
+    <Card className={`h-full flex flex-col border-2 ${borderColor}`}>
       <CardHeader className="bg-white p-2 flex flex-row">
         <div className="grow">
           <CardTitle className="text-left text-2xl">
@@ -76,8 +113,23 @@ export default function CallerCard({
           <div className="flex items-center space-x-2">
             {caller.isLiveCall && <span className="red-dot"></span>}
             <span className="text-sm text-gray-500">{caller.callTime}</span>
+            {caller.isLiveCall 
+            ? isOnHold 
+                ? <Play className="cursor-pointer" onClick={handlePlay} /> 
+                : <Pause className="cursor-pointer" onClick={handlePause}/>
+            : null}
             <PhoneMissed className="text-red-500 cursor-pointer" onClick={handleDropCallClick} />
-            <PhoneForwarded className="text-orange-600 cursor-pointer" onClick={handle1777Click}/>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <PhoneForwarded className="text-orange-600 cursor-pointer"/>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={handle1777Click}>1777</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleFeedback}>Feedback</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleGeneralEnquiries}>General</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleFireHazard}>Fire</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardHeader>
