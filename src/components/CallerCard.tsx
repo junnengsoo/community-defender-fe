@@ -21,7 +21,7 @@ import {
 interface CallerCardProps {
   caller: Caller
   onNameChange: (newName: string) => void;
-  // onConditionChange: (newCondition: string) => void;
+  onConditionChange: (newCondition: string) => void;
   onAddressChange: (newAddress: string) => void;
 }
 
@@ -29,10 +29,21 @@ export default function CallerCard({
   caller,
   onNameChange,
   onAddressChange,
+  onConditionChange
 }: CallerCardProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isOnHold, setOnHold] = useState(false);
+
+  const conditions = [
+    "Abdominal Pain", "Childbirth/Obstetric", "Inhalation", "Allergies", "Choking",
+    "Motor Vehicle Accident", "Animal Bite/Attack/Stings", "Convulsion/Seizure",
+    "Poisoning/Ingestion", "Assault/Rape", "Diabetic Problem", "Psychiatric/Behavioral",
+    "Back Pain", "Diving/Drowning", "Sick Person", "Bleeding/Laceration", "Electrocution",
+    "Stab/Gunshot Injury", "Breathing Problem", "Eye Problem", "Stroke/CVA", "Burns",
+    "Falls/Back Injury", "Traumatic Injury", "Cardiac Arrest/Death", "Headache",
+    "Unconscious/Fainting", "Chest Pain", "Heat/Cold Exposure", "Unknown"
+  ];
 
   const scrollToBottom = () => {
     const scroll = scrollContainerRef.current;
@@ -99,7 +110,18 @@ export default function CallerCard({
             />
           </CardTitle>
           <CardDescription className="flex items-center text-lg space-x-2">
-            <span className="text-red-600 input-field">{caller.condition}</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <span className="text-red-600 input-field">{caller.condition}</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {conditions.map(condition => (
+                  <DropdownMenuItem key={condition} onSelect={() => onConditionChange(condition)}>
+                    {condition}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Home className="h-5 w-5 text-blue-500 ml-2" />
             <input
               className="border-none px-2 input-field"

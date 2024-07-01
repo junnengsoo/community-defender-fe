@@ -32,14 +32,14 @@ function App() {
     });
   };
 
-  // const handleConditionChange = (id: number, newCondition: string) => { // to fix
-  //   setCallers((prevCallers) => {
-  //     const newCallers = prevCallers.map((caller) => 
-  //       caller.id === id ? { ...caller, condition: newCondition } : caller
-  //     );
-  //     return newCallers;
-  //   });
-  // };
+  const handleConditionChange = (id: number, newCondition: string) => { // to fix
+    setCallers((prevCallers) => {
+      const newCallers = prevCallers.map((caller) => 
+        caller.id === id ? { ...caller, condition: newCondition } : caller
+      );
+      return newCallers;
+    });
+  };
 
   const handleAddressChange = (id: number, newAddress: string) => {
     setCallers((prevCallers) => {
@@ -329,6 +329,7 @@ function App() {
                 caller={caller}
                 onNameChange={(newName) => handleNameChange(caller.id, newName)}
                 onAddressChange={(newAddress) => handleAddressChange(caller.id, newAddress)}
+                onConditionChange={(newCondition) => handleConditionChange(caller.id, newCondition)}
               />
             )}
           </div>
