@@ -11,7 +11,17 @@ const socket = io('http://localhost:5001'); // Adjust the URL if needed
 function App() {
   const [callers, setCallers] = useState<Caller[]>([]);
   const [selectedCallerIds, setselectedCallerIds] = useState<number[]>([]);
-  const transcriptionStarted = useRef(false);
+  const [transcriptionStarted, setTranscriptionStarted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    console.log("Transcription started: ", transcriptionStarted)
+    // Automatically start playing audio when transcription starts
+    if (transcriptionStarted && audioRef.current) {
+      console.log("Playing audio");
+      audioRef.current.play();
+    }
+  }, [transcriptionStarted]);
 
     const handleCallerClick = (callerToEdit: Caller) => {
     if (!selectedCallerIds.some(callerId => callerId === callerToEdit.id)) { // add caller to selected caller list
@@ -59,9 +69,16 @@ function App() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ url: caller.url, caller_id: caller.id })
-        });
-
-  }
+        })
+        .then(() => {
+          setTranscriptionStarted(true);
+          if (audioRef.current) {
+            audioRef.current.src = caller.url; // Set the audio source to the current caller's URL
+            audioRef.current.play(); // Play the audio when transcription starts
+          }
+        })
+        .catch(console.error);
+  };
 
   useEffect(() => {
     socket.on('transcription_update', ({ caller_id, line }) => {
@@ -92,14 +109,14 @@ function App() {
     fetchCallers();
   }, []);
 
-  useEffect(() => {
-    if (callers.length > 0 && !transcriptionStarted.current) {
-      console.log("calling start transcription");
-      console.log(callers);
-      callers.forEach(caller => startTranscription(caller));
-      transcriptionStarted.current = true; // Set the flag to true after starting transcription
-    }
-  }, [callers]); // This useEffect runs when callers state changes
+  // Start transcription for all callers on user action
+const handleStartTranscriptionClick = () => {
+  // Ensure transcription is started only once per session
+  if (!transcriptionStarted && callers.length > 0) {
+    callers.forEach(caller => startTranscription(caller));
+    setTranscriptionStarted(true); // Ensure we don't start it more than once
+  }
+};
 
   useEffect(() => {
     setCallers((prevCallers) =>
@@ -321,12 +338,19 @@ function App() {
             selectedCallers={callers.filter(caller => selectedCallerIds.includes(caller.id))}
             callers={callers}
           />
+          <button onClick={handleStartTranscriptionClick} className="start-button">
+            Start Transcription
+          </button>
         </div>
+        <audio ref={audioRef} preload="auto" hidden>
+          Your browser does not support the audio element.
+        </audio>
         {callers.filter(caller => selectedCallerIds.includes(caller.id)).map((caller, index) => (
           <div key={index} className="col-span-2 overflow-hidden">
             {caller && (
               <CallerCard
                 caller={caller}
+                transcriptionStarted={transcriptionStarted}
                 onNameChange={(newName) => handleNameChange(caller.id, newName)}
                 onAddressChange={(newAddress) => handleAddressChange(caller.id, newAddress)}
                 onConditionChange={(newCondition) => handleConditionChange(caller.id, newCondition)}
