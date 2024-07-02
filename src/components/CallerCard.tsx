@@ -20,7 +20,6 @@ import {
 
 interface CallerCardProps {
   caller: Caller
-  transcriptionStarted: boolean;
   onNameChange: (newName: string) => void;
   onConditionChange: (newCondition: string) => void;
   onAddressChange: (newAddress: string) => void;
@@ -28,7 +27,6 @@ interface CallerCardProps {
 
 export default function CallerCard({
   caller,
-  transcriptionStarted,
   onNameChange,
   onAddressChange,
   onConditionChange
@@ -36,16 +34,6 @@ export default function CallerCard({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isOnHold, setOnHold] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  useEffect(() => {
-    console.log("Transcription started: ", transcriptionStarted)
-    // Automatically start playing audio when transcription starts
-    if (transcriptionStarted && audioRef.current) {
-      console.log("Playing audio");
-      audioRef.current.play();
-    }
-  }, [transcriptionStarted]);
 
   const conditions = [
     "Abdominal Pain", "Childbirth/Obstetric", "Inhalation", "Allergies", "Choking",
@@ -169,9 +157,6 @@ export default function CallerCard({
       </CardHeader>
       <CardContent className="p-2 h-1/2 flex flex-col">
         <ScrollArea className="w-full rounded-md border" ref={scrollContainerRef}>
-          <audio ref={audioRef} src={caller.url} preload="auto">
-              Your browser does not support the audio element.
-          </audio>
           <div className="my-2">
             {caller.messages.map((message, index) => (
               <div key={index} className="flex py-1">
