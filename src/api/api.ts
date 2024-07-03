@@ -13,41 +13,44 @@ export const getCallers = async (): Promise<Caller[]> => {
     {
       id: 1,
       name: 'Caller 1',
-      condition: 'Initial', // to change
+      condition: 'Unknown', // to change
       address: 'Address 1',
       callTime: '00:00',
       isLiveCall: true,
       messages: [ // initialised as empty
       ],
       extractedMessages: 'Extracted messages for caller 1',
-      url: 'https://niclee1219.github.io/SCDFxDELL-995calls/Audio/case%201-english.mp3',
       isOperatorOnline: true,
+      url: 'https://niclee1219.github.io/SCDFxDELL-995calls/Audio/case%201-AI-english.mp3',
+      lang: "eng",
     },
     {
       id: 2,
       name: 'Caller 2',
-      condition: 'Initial',
+      condition: 'Unknown',
       address: 'Address 2',
       callTime: '00:00',
       isLiveCall: true,
       messages: [
       ],
       extractedMessages: 'Extracted messages for caller 2',
-      url: 'https://niclee1219.github.io/SCDFxDELL-995calls/Audio/case%203-english.mp3',
       isOperatorOnline: false,
+      url: 'https://niclee1219.github.io/SCDFxDELL-995calls/Audio/case%201-AI-chinese.mp3',
+      lang: "chi",
     },
     {
       id: 3,
       name: 'Caller 3',
-      condition: 'Initial',
+      condition: 'Unknown',
       address: 'Address 3',
       callTime: '00:00',
       isLiveCall: true,
       messages: [
       ],
       extractedMessages: 'Extracted messages for caller 3',
-      url: 'https://niclee1219.github.io/SCDFxDELL-995calls/Audio/case%204-english.mp3',
       isOperatorOnline: false,
+      url: 'https://niclee1219.github.io/SCDFxDELL-995calls/Audio/case%205-english.mp3',
+      lang: "eng"
     }
   ];
 

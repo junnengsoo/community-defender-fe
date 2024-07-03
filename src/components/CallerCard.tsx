@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import "../App.css";
 
 
 interface CallerCardProps {
@@ -29,21 +30,33 @@ export default function CallerCard({
   caller,
   onNameChange,
   onAddressChange,
-  onConditionChange
+  onConditionChange,
 }: CallerCardProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isOnHold, setOnHold] = useState(false);
+  const [isGlowing, setIsGlowing] = useState(false);
 
   const conditions = [
-    "Abdominal Pain", "Childbirth/Obstetric", "Inhalation", "Allergies", "Choking",
-    "Motor Vehicle Accident", "Animal Bite/Attack/Stings", "Convulsion/Seizure",
-    "Poisoning/Ingestion", "Assault/Rape", "Diabetic Problem", "Psychiatric/Behavioral",
-    "Back Pain", "Diving/Drowning", "Sick Person", "Bleeding/Laceration", "Electrocution",
-    "Stab/Gunshot Injury", "Breathing Problem", "Eye Problem", "Stroke/CVA", "Burns",
-    "Falls/Back Injury", "Traumatic Injury", "Cardiac Arrest/Death", "Headache",
-    "Unconscious/Fainting", "Chest Pain", "Heat/Cold Exposure", "Unknown"
+    "Convulsion/Seizure", "Breathing Problem", "Traumatic Injury", "Cardiac Arrest/Death", 
+    "Unconscious/Fainting", "Unknown"
   ];
+
+  useEffect(() => {
+    // Check if caller.messages includes the specific string
+    if (caller.messages.length > 0) {
+      const lastMessage = JSON.stringify(caller.messages[caller.messages.length - 1].text).toLowerCase();
+      console.log(typeof lastMessage);
+      
+      // Ensure the text property is a string
+      if (typeof lastMessage === "string") {
+        if (lastMessage.includes("yes") && lastMessage.includes("hurry up")) {
+          console.log("glow");
+          setIsGlowing(true); // Start glowing
+        } 
+      } 
+    }
+  }, [caller.messages]); // Run effect whenever caller.messages changes
 
   const scrollToBottom = () => {
     const scroll = scrollContainerRef.current;
@@ -66,10 +79,17 @@ export default function CallerCard({
     caller.isOperatorOnline = false;
   };
 
+  const resetPing = () => {
+    if (isGlowing) {
+      setIsGlowing(false);
+    }
+  }
+
   const handlePlay = () => {
     console.log('Reconnect to call');
     setOnHold(false);
     caller.isOperatorOnline = true;
+    resetPing();
   };
 
   const handleDropCallClick = () => {
@@ -80,6 +100,8 @@ export default function CallerCard({
 
   const handle1777Click = () => {
     console.log('Recommend to 1777');
+    caller.isOperatorOnline = false;
+    caller.isLiveCall = false;
   };
 
   const handleFeedback = () => {
@@ -137,7 +159,7 @@ export default function CallerCard({
             <span className="text-sm text-gray-500">{caller.callTime}</span>
             {caller.isLiveCall 
             ? isOnHold 
-                ? <Play className="cursor-pointer" onClick={handlePlay} /> 
+                ? <Play className={`cursor-pointer ${isGlowing ? 'vibrate' : ''}`} onClick={handlePlay} /> 
                 : <Pause className="cursor-pointer" onClick={handlePause}/>
             : null}
             <PhoneMissed className="text-red-500 cursor-pointer" onClick={handleDropCallClick} />
@@ -171,7 +193,9 @@ export default function CallerCard({
       </CardContent>
       <CardFooter className="bg-white h-1/4 grow flex flex-col p-2">
         <ScrollArea className="w-full rounded-md border">
-          <p className="text-gray-500">{caller.extractedMessages}</p>
+          <p className="text-gray-500 font-sans" style={{ whiteSpace: 'pre-line', lineHeight: '0.9' }}> 
+            {caller.extractedMessages}
+          </p>
         </ScrollArea>
       </CardFooter>
     </Card>

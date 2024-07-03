@@ -80,5 +80,27 @@
   max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre-line;
+}
+
+
+.glow {
+  transition: box-shadow 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 0, 255, 0); 
+}
+
+.glow.active {
+  box-shadow: 0 0 20px rgba(0, 0, 255, 0.8); }
+
+@keyframes vibrate {
+  /* Define your vibration animation keyframes here */
+  0% { transform: translate(0); }
+  25% { transform: translate(-2px, 2px); }
+  50% { transform: translate(2px, -2px); }
+  75% { transform: translate(-2px, -2px); }
+  100% { transform: translate(2px, 2px); }
+}
+  
+.vibrate {
+  animation: vibrate 0.2s linear infinite;
 }

@@ -8,11 +8,18 @@ import { Caller } from "@/components/CallerTypes";
 
 const socket = io("http://localhost:5001"); // Adjust the URL if needed
 
-function App() {
+export function App() {
   const [callers, setCallers] = useState<Caller[]>([]);
   const [selectedCallerIds, setselectedCallerIds] = useState<number[]>([]);
   const [transcriptionStarted, setTranscriptionStarted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const callTimeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetState = () => {
+    fetchCallers();
+    setselectedCallerIds([]);
+    setTranscriptionStarted(false);
+  };
 
   useEffect(() => {
     console.log("Transcription started: ", transcriptionStarted);
@@ -67,22 +74,21 @@ function App() {
 
   const startTranscription = (caller: Caller) => {
     console.log("Starting transcription for " + caller.id.toString());
-    fetch("http://127.0.0.1:5001/transcribe", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url: caller.url, caller_id: caller.id }),
-    })
-      .then(() => {
-        setTranscriptionStarted(true);
-        // Check if the caller is the one currently operated on and if the operator is online
-        if (audioRef.current && caller.isOperatorOnline) {
-          audioRef.current.src = caller.url; // Set the audio source to the current caller's URL
-          audioRef.current.play(); // Play the audio when transcription starts
-        }
-      })
-      .catch(console.error);
+    fetch('http://127.0.0.1:5001/transcribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url: caller.url, caller_id: caller.id, lang:caller.lang})
+        }).then(() => {
+          setTranscriptionStarted(true);
+          // Check if the caller is the one currently operated on and if the operator is online
+          if (audioRef.current && caller.isOperatorOnline) {
+            audioRef.current.src = caller.url; // Set the audio source to the current caller's URL
+            audioRef.current.play(); // Play the audio when transcription starts
+          }
+        })
+        .catch(console.error);
   };
 
   useEffect(() => {
@@ -101,25 +107,28 @@ function App() {
     };
   }, []);
 
+  async function fetchCallers() {
+    try {
+      const data = await getCallers(); // Assuming getCallers is a function that fetches the caller data
+      setCallers(data);
+    } catch (error) {
+      console.error("Failed to fetch callers", error);
+    }
+  }
+
   // Initialisation with dummy data
   useEffect(() => {
-    async function fetchCallers() {
-      try {
-        const data = await getCallers(); // Assuming getCallers is a function that fetches the caller data
-        setCallers(data);
-      } catch (error) {
-        console.error("Failed to fetch callers", error);
-      }
-    }
     fetchCallers();
   }, []);
 
   // Start transcription for all callers on user action
   const handleStartTranscriptionClick = () => {
+    console.log("start transcription clicked")
     // Ensure transcription is started only once per session
     if (!transcriptionStarted && callers.length > 0) {
       callers.forEach((caller) => startTranscription(caller));
       setTranscriptionStarted(true); // Ensure we don't start it more than once
+      console.log("starting transcription")
     }
   };
 
@@ -146,10 +155,16 @@ function App() {
   };
 
   const updateCallTimes = (callers: Caller[]) => {
-    return callers.map((caller) => ({
-      ...caller,
-      callTime: addSecondToCallTime(caller.callTime),
-    }));
+    return callers.map((caller) => {
+      if (caller.isLiveCall) {
+        return {
+          ...caller,
+          callTime: addSecondToCallTime(caller.callTime),
+        }
+      } else {
+        return caller;
+      }
+    });
   };
 
   const updateNameAndAddress = async (caller: Caller): Promise<Caller> => {
@@ -160,8 +175,7 @@ function App() {
     let fetchedName = caller.name;
     let fetchedAddress = caller.address;
 
-    if (caller.name === "Caller 1" || caller.address === "Unknown") {
-      // to change
+    if (caller.address.includes("Address")) { // to change caller.name === "Caller 1" || 
       try {
         const response = await fetch("http://127.0.0.1:5003/identify-details", {
           method: "POST",
@@ -177,7 +191,10 @@ function App() {
 
         const details = await response.json();
         console.log(details);
-        fetchedName = details?.name ?? "Unknown";
+        console.log(details.name);
+        if (details.name != "Unknown") {
+          fetchedName = details.name 
+        }
         fetchedAddress = details?.address ?? "Unknown";
 
         return {
@@ -187,7 +204,7 @@ function App() {
         };
       } catch (error) {
         console.error("Error fetching data:", error);
-        caller.name = "haha"; // to remove
+        // caller.name = "haha"; // to remove
         console.log(caller);
         console.log(caller.callTime);
         return caller;
@@ -201,8 +218,7 @@ function App() {
       .map((m) => m.sender + ": " + m.text)
       .join(" ");
     let fetchedCondition = caller.condition;
-    if (caller.name === "Unknown" && caller.condition === "Initial") {
-      // consider removing
+    if (caller.condition === "Unknown") { // consider removing
       try {
         const response = await fetch(
           "http://127.0.0.1:5003/identify-condition",
@@ -222,6 +238,9 @@ function App() {
         const details = await response.json();
         console.log(details);
         fetchedCondition = details?.condition ?? "Unknown";
+        if (fetchedCondition != "Unknown") {
+          fetchedCondition = fetchedCondition.toLowerCase();
+        }
 
         return {
           ...caller,
@@ -240,119 +259,129 @@ function App() {
       .map((m) => m.sender + ": " + m.text)
       .join(" ");
     let extractedMessages = caller.extractedMessages;
-    try {
-      const response = await fetch("http://127.0.0.1:5002/summarize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: currentTranscript, is_first: true }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+  
+    if (caller.extractedMessages.includes("messages")) { // consider removing
+      try {
+        console.log("summary api for " + caller.id)
+        const response = await fetch("http://127.0.0.1:5002/summarize", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ "text": currentTranscript, "is_first": true, "caller_id": caller.id}),
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+  
+        const details = await response.json();
+        console.log(details);
+        extractedMessages = details?.summary ?? extractedMessages;
+  
+        return {
+          ...caller,
+          extractedMessages: extractedMessages,
+        };
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        return caller;
       }
-
-      const details = await response.json();
-      console.log(details);
-      extractedMessages = details?.summary ?? extractedMessages;
-
-      return {
-        ...caller,
-        extractedMessages: extractedMessages,
-      };
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      return caller;
     }
+  
+    return caller;
   };
+  
 
   useEffect(() => {
-    // Update call times every 1 second
-    const callTimeInterval = setInterval(() => {
-      setCallers((prevCallers) => updateCallTimes(prevCallers));
-    }, 1000);
+    if (transcriptionStarted) {
+      // Update call times every 1 second
+      callTimeIntervalRef.current = setInterval(() => {
+        setCallers((prevCallers) => updateCallTimes(prevCallers));
+      }, 1000);
 
-    // Note: If the following updates are run concurrently, the properties of the callers might override
-    // one another, the temporary fix is to have the updates run sequentially.
+      // Note: If the following updates are run concurrently, the properties of the callers might override
+      // one another, the temporary fix is to have the updates run sequentially.
 
-    // Update name and address every 20 seconds
-    const nameAddressInterval = setInterval(() => {
-      setCallers((prevCallers) => {
-        const fetchAndUpdateCallers = async () => {
-          try {
-            console.log("Fetching and updating callers");
-            const updatedCallers = await Promise.all(
-              prevCallers.map(updateNameAndAddress)
-            );
-            console.log("Updated callers:", updatedCallers);
-            return updatedCallers;
-          } catch (error) {
-            console.error("Error updating callers:", error);
-            return prevCallers; // Return previous state in case of error
-          }
-        };
+      // Update name and address every 18 seconds
+      const nameAddressInterval = setInterval(() => {
+        setCallers((prevCallers) => {
+          const fetchAndUpdateCallers = async () => {
+            try {
+              console.log("Fetching and updating callers");
+              const updatedCallers = await Promise.all(
+                prevCallers.map(updateNameAndAddress)
+              );
+              console.log("Updated callers:", updatedCallers);
+              return updatedCallers;
+            } catch (error) {
+              console.error("Error updating callers:", error);
+              return prevCallers; // Return previous state in case of error
+            }
+          };
 
-        fetchAndUpdateCallers().then((updatedCallers) => {
-          if (updatedCallers) setCallers(updatedCallers);
+          fetchAndUpdateCallers().then((updatedCallers) => {
+            if (updatedCallers) setCallers(updatedCallers);
+          });
+          return prevCallers; // Return the previous state immediately
         });
-        return prevCallers; // Return the previous state immediately
-      });
-    }, 20000);
+      }, 18000);
 
-    const conditionInterval = setInterval(() => {
-      setCallers((prevCallers) => {
-        const fetchAndUpdateCallers = async () => {
-          try {
-            console.log("Identifying condition");
-            const updatedCallers = await Promise.all(
-              prevCallers.map(updateCondition)
-            );
-            console.log("Identified condition:", updatedCallers);
-            return updatedCallers;
-          } catch (error) {
-            console.error("Error updating callers:", error);
-            return prevCallers; // Return previous state in case of error
-          }
-        };
+      const conditionInterval = setInterval(() => {
+        setCallers((prevCallers) => {
+          const fetchAndUpdateCallers = async () => {
+            try {
+              console.log("Identifying condition");
+              const updatedCallers = await Promise.all(
+                prevCallers.map(updateCondition)
+              );
+              console.log("Identified condition:", updatedCallers);
+              return updatedCallers;
+            } catch (error) {
+              console.error("Error updating callers:", error);
+              return prevCallers; // Return previous state in case of error
+            }
+          };
 
-        fetchAndUpdateCallers().then((updatedCallers) => {
-          if (updatedCallers) setCallers(updatedCallers);
+          fetchAndUpdateCallers().then((updatedCallers) => {
+            if (updatedCallers) setCallers(updatedCallers);
+          });
+          return prevCallers; // Return the previous state immediately
         });
-        return prevCallers; // Return the previous state immediately
-      });
-    }, 25000);
+      }, 15000);
 
-    const summaryInterval = setInterval(() => {
-      setCallers((prevCallers) => {
-        const fetchAndUpdateCallers = async () => {
-          try {
-            console.log("Extracting keywords");
-            const updatedCallers = await Promise.all(
-              prevCallers.map(extractSummary)
-            );
-            return updatedCallers;
-          } catch (error) {
-            console.error("Error updating callers:", error);
-            return prevCallers; // Return previous state in case of error
-          }
-        };
+      const summaryInterval = setInterval(() => {
+        setCallers((prevCallers) => {
+          const fetchAndUpdateCallers = async () => {
+            try {
+              console.log("Extracting keywords");
+              const updatedCallers = await Promise.all(prevCallers.map(extractSummary));
+              console.log(updatedCallers);
+              return updatedCallers;
+            } catch (error) {
+              console.error("Error updating callers:", error);
+              return prevCallers; // Return previous state in case of error
+            }
+          };
 
-        fetchAndUpdateCallers().then((updatedCallers) => {
-          if (updatedCallers) setCallers(updatedCallers);
+          fetchAndUpdateCallers().then((updatedCallers) => {
+            if (updatedCallers) setCallers(updatedCallers);
+          });
+          return prevCallers; // Return the previous state immediately
         });
-        return prevCallers; // Return the previous state immediately
-      });
-    }, 30000);
+      }, 30000);
 
-    // Clear interval on component unmount
-    return () => {
-      clearInterval(callTimeInterval);
-      clearInterval(nameAddressInterval);
-      clearInterval(conditionInterval);
-      clearInterval(summaryInterval);
-    };
-  }, []); // Empty dependency array means this effect runs once on mount
+      // Clear interval on component unmount
+      return () => {
+        if (callTimeIntervalRef.current) {
+          clearInterval(callTimeIntervalRef.current);
+        }
+        clearInterval(nameAddressInterval);
+        clearInterval(conditionInterval);
+        clearInterval(summaryInterval);
+      };
+    }
+  }, [transcriptionStarted]); // Empty dependency array means this effect runs once on mount
 
   return (
     <div className="grid h-screen w-screen grid-flow-row grid-cols-5 grid-rows-2">
@@ -368,8 +397,9 @@ function App() {
           onClick={handleStartTranscriptionClick}
           className="start-button"
         >
-          Start Transcription
+          Start  
         </button>
+        <button onClick={resetState}>   Reset</button>
       </div>
       <audio ref={audioRef} preload="auto" hidden>
         Your browser does not support the audio element.

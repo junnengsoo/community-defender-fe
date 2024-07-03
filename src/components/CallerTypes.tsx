@@ -15,6 +15,7 @@ export interface Message {
     messages: Message[];
     extractedMessages: string;
     isOperatorOnline: boolean;
-    // url: string;
+    url: string;
+    lang: string;
   }
   
