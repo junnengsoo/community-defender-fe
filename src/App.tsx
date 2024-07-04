@@ -4,9 +4,9 @@ import io from "socket.io-client";
 import CallerList from "./components/CallerList";
 import CallerCard from "./components/CallerCard";
 import { getCallers } from "./api/api";
-import { Caller } from "@/components/CallerTypes";
+import { Caller, Message } from "@/components/CallerTypes";
 
-const socket = io("http://localhost:5001"); // Adjust the URL if needed
+const socket = io("http://transcription-service-community-defender-ai.apps.innovate.sg-cna.com:5001"); // Adjust the URL if needed
 
 export function App() {
   const [callers, setCallers] = useState<Caller[]>([]);
@@ -74,7 +74,7 @@ export function App() {
 
   const startTranscription = (caller: Caller) => {
     console.log("Starting transcription for " + caller.id.toString());
-    fetch('http://127.0.0.1:5001/transcribe', {
+    fetch('http://transcription-service-community-defender-ai.apps.innovate.sg-cna.com:5001/transcribe', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -92,7 +92,7 @@ export function App() {
   };
 
   useEffect(() => {
-    socket.on("transcription_update", ({ caller_id, line }) => {
+    socket.on("transcription_update", ({ caller_id, line }: {caller_id: number, line : Message}) => {
       setCallers((prevCallers) =>
         prevCallers.map((caller) =>
           caller.id === caller_id
@@ -177,7 +177,7 @@ export function App() {
 
     if (caller.address.includes("Address")) { // to change caller.name === "Caller 1" || 
       try {
-        const response = await fetch("http://127.0.0.1:5003/identify-details", {
+        const response = await fetch("http://identification-service-community-defender-ai.apps.innovate.sg-cna.com:5003/identify-details", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -221,7 +221,7 @@ export function App() {
     if (caller.condition === "Unknown") { // consider removing
       try {
         const response = await fetch(
-          "http://127.0.0.1:5003/identify-condition",
+          "http://identification-service-community-defender-ai.apps.innovate.sg-cna.com:5003/identify-condition",
           {
             method: "POST",
             headers: {
@@ -263,7 +263,7 @@ export function App() {
     if (caller.extractedMessages.includes("messages")) { // consider removing
       try {
         console.log("summary api for " + caller.id)
-        const response = await fetch("http://127.0.0.1:5002/summarize", {
+        const response = await fetch("http://summarization-service-community-defender-ai.apps.innovate.sg-cna.com:5002/summarize", {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
