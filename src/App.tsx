@@ -6,7 +6,7 @@ import CallerCard from "./components/CallerCard";
 import { getCallers } from "./api/api";
 import { Caller, Message } from "@/components/CallerTypes";
 
-const socket = io("http://transcription-service-community-defender-ai.apps.innovate.sg-cna.com:5001"); // Adjust the URL if needed
+const socket = io("https://transcription-service-community-defender-ai.apps.innovate.sg-cna.com"); // Adjust the URL if needed
 
 export function App() {
   const [callers, setCallers] = useState<Caller[]>([]);
@@ -74,7 +74,7 @@ export function App() {
 
   const startTranscription = (caller: Caller) => {
     console.log("Starting transcription for " + caller.id.toString());
-    fetch('http://transcription-service-community-defender-ai.apps.innovate.sg-cna.com:5001/transcribe', {
+    fetch('https://transcription-service-community-defender-ai.apps.innovate.sg-cna.com/transcribe', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ export function App() {
           setTranscriptionStarted(true);
           // Check if the caller is the one currently operated on and if the operator is online
           if (audioRef.current && caller.isOperatorOnline) {
-            audioRef.current.src = caller.url; // Set the audio source to the current caller's URL
+            audioRef.current.src = "https://niclee1219.github.io/SCDFxDELL-995calls/Audio/ambulanceaispeedup.mp3"; // Set the audio source to the current caller's URL
             audioRef.current.play(); // Play the audio when transcription starts
           }
         })
@@ -177,7 +177,7 @@ export function App() {
 
     if (caller.address.includes("Address")) { // to change caller.name === "Caller 1" || 
       try {
-        const response = await fetch("http://identification-service-community-defender-ai.apps.innovate.sg-cna.com:5003/identify-details", {
+        const response = await fetch("https://identification-service-community-defender-ai.apps.innovate.sg-cna.com/identify-details", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -221,7 +221,7 @@ export function App() {
     if (caller.condition === "Unknown") { // consider removing
       try {
         const response = await fetch(
-          "http://identification-service-community-defender-ai.apps.innovate.sg-cna.com:5003/identify-condition",
+          "https://identification-service-community-defender-ai.apps.innovate.sg-cna.com/identify-condition",
           {
             method: "POST",
             headers: {
@@ -263,7 +263,7 @@ export function App() {
     if (caller.extractedMessages.includes("messages")) { // consider removing
       try {
         console.log("summary api for " + caller.id)
-        const response = await fetch("http://summarization-service-community-defender-ai.apps.innovate.sg-cna.com:5002/summarize", {
+        const response = await fetch("https://summarization-service-community-defender-ai.apps.innovate.sg-cna.com/summarize", {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -385,7 +385,8 @@ export function App() {
 
   return (
     <div className="grid h-screen w-screen grid-flow-row grid-cols-5 grid-rows-2">
-      <div className="h-screen col-span-1 row-span-3">
+      <div className="h-screen col-span-1 row-span-3 flex flex-col justify-between">
+        <div className="flex-1 overflow-auto">
         <CallerList
           onCallerClick={handleCallerClick}
           selectedCallers={callers.filter((caller) =>
@@ -393,13 +394,14 @@ export function App() {
           )}
           callers={callers}
         />
+        </div>
         <button
           onClick={handleStartTranscriptionClick}
           className="start-button"
         >
-          Start  
+          S 
         </button>
-        <button onClick={resetState}>   Reset</button>
+        <button onClick={resetState}>   R</button>
       </div>
       <audio ref={audioRef} preload="auto" hidden>
         Your browser does not support the audio element.
