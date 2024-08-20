@@ -1,35 +1,8 @@
-# Quick-start Guide
+# Introduction
+CommunityDefender.AI is a call-taker AI assistant designed to streamline emergency calls, ensuring clarity and ease of understanding for call operators from start to finish. Before a live operator picks up, standardised questions will be asked, with the AI transcribing and summarising information from the caller, and flagging out potential life-threatening conditions. During the call, it assists operators by continuing to flag out potential life-threatening conditions while continuously transcribing conversations. Post-call, it provides live updates to the caller, monitors the situation for the operator while conversing with the caller if necessary, and reconnects back to the ops centre if the situation escalates. 
 
-1. `npm install`
-2. `npm run dev`
-
-## React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+# Give it a try!
+- Click [here](https://frontend-community-defender-ai.apps.innovate.sg-cna.com/)!
+- Interact with any of the caller cards on the left
+- Click on the 'S' button on the bottom left of the screen to simulate an emergency call
+- Turn on your audio to listen to the live transcription that is passed into the backend models!
