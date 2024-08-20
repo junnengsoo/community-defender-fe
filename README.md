@@ -8,3 +8,6 @@ CommunityDefender.AI is a call-taker AI assistant designed to streamline emergen
 - Turn on your audio to listen to the live transcription that is passed into the backend models!
 
 Click [here](https://github.com/kaitinghh/community-defender-ai) for the backend repository.
+
+# Cloud Native Architecture Design
+![SCDF Architecture-Page-1 drawio](https://github.com/user-attachments/assets/1000cc5e-83ca-4a66-997d-4efa87cf8a22)
