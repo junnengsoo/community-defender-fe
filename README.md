@@ -6,3 +6,5 @@ CommunityDefender.AI is a call-taker AI assistant designed to streamline emergen
 - Interact with any of the caller cards on the left
 - Click on the 'S' button on the bottom left of the screen to simulate an emergency call
 - Turn on your audio to listen to the live transcription that is passed into the backend models!
+
+Click [here](https://github.com/kaitinghh/community-defender-ai) for the backend repository.
